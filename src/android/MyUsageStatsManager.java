@@ -58,7 +58,7 @@ public class MyUsageStatsManager extends CordovaPlugin {
             List<UsageStats> usageStatsList = new ArrayList<UsageStats>();
             if (statsUsageInterval != null) {
                 usageStatsList = queryUsageStatistics(statsUsageInterval.mInterval);
-                Collections.sort(usageStatsList, new LastTimeLaunchedComparatorDesc());
+                // Collections.sort(usageStatsList, new LastTimeLaunchedComparatorDesc());
             }
 
             JSONArray jsonArray = new JSONArray();
@@ -90,9 +90,9 @@ public class MyUsageStatsManager extends CordovaPlugin {
      * @return A list of {@link android.app.usage.UsageStats}.
      */
     public List<UsageStats> queryUsageStatistics(int intervalType) {
-        // Get the app statistics since one year ago from the current time.
+        // Get the app statistics since 2 weeks ago from the current time.
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, -28);
+        cal.add(Calendar.DAY_OF_MONTH, -14);
         List<UsageStats> queryUsageStats = mUsageStatsManager.queryUsageStats(intervalType, cal.getTimeInMillis(), System.currentTimeMillis());
         return queryUsageStats;
     }
@@ -147,7 +147,7 @@ public class MyUsageStatsManager extends CordovaPlugin {
     public JSONObject toJSON(UsageStats usageStats) throws Exception{
         JSONObject object= new JSONObject();
         object.put("PackageName", usageStats.getPackageName());
-        object.put("AppName", getAppName(usageStats.getPackageName()));
+        // object.put("AppName", getAppName(usageStats.getPackageName()));
         object.put("FirstTimeStamp", usageStats.getFirstTimeStamp());
         object.put("LastTimeStamp", usageStats.getLastTimeStamp());
         object.put("LastTimeUsed", usageStats.getLastTimeUsed());
