@@ -51,30 +51,35 @@ public class MyUsageStatsManager extends CordovaPlugin {
         return false;
     }
 
-    private void getUsageStatistics(String interval, CallbackContext callbackContext) {
-        try{
-            Log.i(LOG_TAG, interval);
-            StatsUsageInterval statsUsageInterval = StatsUsageInterval.getValue(interval);
-            List<UsageStats> usageStatsList = new ArrayList<UsageStats>();
-            if (statsUsageInterval != null) {
-                usageStatsList = queryUsageStatistics(statsUsageInterval.mInterval);
-                // Collections.sort(usageStatsList, new LastTimeLaunchedComparatorDesc());
+    private void getUsageStatistics(final String interval, final CallbackContext callbackContext) {
+        Runnable runnable = new Runnable() {
+          public void run() {
+            try{
+                Log.i(LOG_TAG, interval);
+                StatsUsageInterval statsUsageInterval = StatsUsageInterval.getValue(interval);
+                List<UsageStats> usageStatsList = new ArrayList<UsageStats>();
+                if (statsUsageInterval != null) {
+                    usageStatsList = queryUsageStatistics(statsUsageInterval.mInterval);
+                    // Collections.sort(usageStatsList, new LastTimeLaunchedComparatorDesc());
+                }
+
+                JSONArray jsonArray = new JSONArray();
+                for (UsageStats stat : usageStatsList){
+                    JSONObject obj = toJSON(stat);
+                    jsonArray.put(obj);
+                }
+
+                String result = jsonArray.toString();
+                Log.d(LOG_TAG, result);
+                callbackContext.success(result);
+
+            }catch (Exception e){
+                e.printStackTrace();
+                callbackContext.error(e.toString());
             }
-
-            JSONArray jsonArray = new JSONArray();
-            for (UsageStats stat : usageStatsList){
-                JSONObject obj = toJSON(stat);
-                jsonArray.put(obj);
-            }
-
-            String result = jsonArray.toString();
-            Log.d(LOG_TAG, result);
-            callbackContext.success(result);
-
-        }catch (Exception e){
-            e.printStackTrace();
-            callbackContext.error(e.toString());
-        }
+          }
+        };
+        this.cordova.getThreadPool().execute(runnable);
     }
 
 
