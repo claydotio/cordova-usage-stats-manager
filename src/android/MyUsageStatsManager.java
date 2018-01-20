@@ -9,10 +9,13 @@ import org.json.JSONObject;
 
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
+import android.app.AppOpsManager;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -41,8 +44,9 @@ public class MyUsageStatsManager extends CordovaPlugin {
         mUsageStatsManager = (UsageStatsManager) this.cordova.getActivity().getApplicationContext().getSystemService("usagestats"); //Context.USAGE_STATS_SERVICE
         packMan = this.cordova.getActivity().getApplicationContext().getPackageManager();
         if (action.equals("getUsageStatistics")) {
-            String arg = args.getString(0);
-            this.getUsageStatistics(arg, callbackContext);
+            String interval = args.getString(0);
+            JSONArray packageNames = args.getJSONArray(1);
+            this.getUsageStatistics(interval, packageNames, callbackContext);
             return true;
         }else if(action.equals("openPermissionSettings")){
             this.openPermissionSettings(callbackContext);
@@ -51,10 +55,42 @@ public class MyUsageStatsManager extends CordovaPlugin {
         return false;
     }
 
-    private void getUsageStatistics(final String interval, final CallbackContext callbackContext) {
+    private Boolean getIsUsageStatsEnabled() {
+       Context context = this.cordova.getActivity().getApplicationContext();
+       if (VERSION.SDK_INT < VERSION_CODES.LOLLIPOP) {
+           return false;
+       }
+
+       final AppOpsManager appOpsManager = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+
+       if (appOpsManager == null) {
+           return false;
+       }
+
+       final int mode = appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), context.getPackageName());
+       if (mode != AppOpsManager.MODE_ALLOWED) {
+           return false;
+       }
+
+       // Verify that access is possible. Some devices "lie" and return MODE_ALLOWED even when it's not.
+       final long now = System.currentTimeMillis();
+       final UsageStatsManager mUsageStatsManager = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
+       final List<UsageStats> stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 1000 * 10, now);
+       return (stats != null && !stats.isEmpty());
+    }
+
+    private void getUsageStatistics(final String interval, final JSONArray packageNames, final CallbackContext callbackContext) {
         Runnable runnable = new Runnable() {
           public void run() {
             try{
+                Boolean isUsageStatsEnabled = getIsUsageStatsEnabled();
+                if(!isUsageStatsEnabled) {
+                  callbackContext.success();
+                  return;
+                }
+
+                String packageNamesStr = packageNames.toString();
+
                 Log.i(LOG_TAG, interval);
                 StatsUsageInterval statsUsageInterval = StatsUsageInterval.getValue(interval);
                 List<UsageStats> usageStatsList = new ArrayList<UsageStats>();
@@ -65,13 +101,14 @@ public class MyUsageStatsManager extends CordovaPlugin {
 
                 JSONArray jsonArray = new JSONArray();
                 for (UsageStats stat : usageStatsList){
+                  if(packageNamesStr.contains("\"" + stat.getPackageName() + "\"")) {
                     JSONObject obj = toJSON(stat);
                     jsonArray.put(obj);
+                  }
                 }
 
                 String result = jsonArray.toString();
-                Log.d(LOG_TAG, result);
-                callbackContext.success(result);
+                callbackContext.success(jsonArray);
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -166,7 +203,6 @@ public class MyUsageStatsManager extends CordovaPlugin {
      */
     private void openPermissionSettings(CallbackContext callbackContext){
         try {
-
             Context context = this.cordova.getActivity().getApplicationContext();
             Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
