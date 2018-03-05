@@ -1,6 +1,6 @@
 var exec = require('cordova/exec');
 
-window.UsageStatistics = {
+module.exports = {
   getUsageStatistics: function(success, error, interval, packageNames) {
     console.log("getUsageStatistics() :: " + interval);
   	var array = [interval, packageNames];
