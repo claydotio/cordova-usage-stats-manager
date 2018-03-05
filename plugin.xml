@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-plugin-usage-stats-manager" version="1.0.0">
     <name>usage-stats-manager</name>
-    <js-module name="usage-stats-manager" src="www/usage-stats-manager.js">
+    <js-module name="UsageStatistics" src="www/usage-stats-manager.js">
         <clobbers target="window.UsageStatistics" />
     </js-module>
     <platform name="android">
