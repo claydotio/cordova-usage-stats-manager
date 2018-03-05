@@ -1,25 +1,19 @@
 {
-  "name": "usage-stats-manager",
-  "version": "0.0.1",
+  "name": "cordova-usage-stats-manager",
+  "version": "1.0.0",
   "description": "Cordova Android plugin for accessing UsageStatsManager API",
-  "cordova": {
-    "id": "cordova-plugin-usage-stats-manager",
-    "platforms": [
-      "android"
-    ]
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/les-buchanan/cordova-usage-stats-manager.git"
+    "url": "git+https://github.com/claydotio/cordova-usage-stats-manager.git"
   },
-  "keywords": [
-    "ecosystem:cordova",
-    "cordova-android"
-  ],
-  "author": "Les Buchanan / Koros G",
+  "author": "Austin Hallock <austin@clay.io> (http://clay.io/)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/les-buchanan/cordova-usage-stats-manager/issues"
+    "url": "https://github.com/claydotio/cordova-usage-stats-manager/issues"
   },
-  "homepage": "https://github.com/les-buchanan/cordova-usage-stats-manager#readme"
+  "homepage": "https://github.com/claydotio/cordova-usage-stats-manager#readme"
 }
